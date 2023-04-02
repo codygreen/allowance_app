@@ -4,11 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from pymongo import MongoClient
 import uuid
-import sys
-
-sys.path.append("..")
-
-import settings
+import os
 
 class Ledger(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
@@ -17,7 +13,7 @@ class Ledger(BaseModel):
     type: str
 
 app = FastAPI()
-client = MongoClient(settings.MONGO_URI)
+client = MongoClient(os.environ['MONGO_URI'])
 db = client.allowance
 
 @app.get("/{user_id}")

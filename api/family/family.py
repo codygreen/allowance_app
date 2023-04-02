@@ -4,18 +4,14 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from pymongo import MongoClient
 import uuid
-import sys
-
-sys.path.append("..")
-
-import settings
+import os
 class Family(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     name: str
     guardians: list[int]
 
 app = FastAPI()
-client = MongoClient(settings.MONGO_URI)
+client = MongoClient(os.environ['MONGO_URI'])
 db = client.allowance
 
 @app.get("/", response_model=list[Family])
