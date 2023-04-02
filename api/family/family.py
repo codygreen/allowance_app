@@ -3,9 +3,12 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from pymongo import MongoClient
-import settings
 import uuid
+import sys
 
+sys.path.append("..")
+
+import settings
 class Family(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     name: str
