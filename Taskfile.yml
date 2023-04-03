@@ -1,0 +1,82 @@
+version: "3"
+
+vars:
+  UNIT_CONTAINER_NAME: allowance_api
+  MONGO_CONTAINER_NAME: mongo
+  MONGO_URI: "mongodb://127.0.0.1:27017"
+
+tasks:
+  
+  local-dev-family:
+    desc: Launch local server for development
+    dir: ./api/family
+    env:
+      MONGO_URI: "{{.MONGO_URI}}"
+    cmds:
+      - echo $MONGO_URI
+      - uvicorn family:app --reload
+  
+  local-dev-ledger:
+    desc: Launch local server for development
+    dir: ./api/ledger
+    env:
+      MONGO_URI: "{{.MONGO_URI}}"
+    cmds:
+      - echo $MONGO_URI
+      - uvicorn ledger:app --reload
+
+  local-dev-users:
+    desc: Launch local server for development
+    dir: ./api/users
+    env:
+      MONGO_URI: "{{.MONGO_URI}}"
+    cmds:
+      - uvicorn users:app --reload
+  
+  mongo-deploy:
+    desc: Deploy the MongoDB container
+    cmds:
+      - docker run -d --name {{.MONGO_CONTAINER_NAME}} -p 27017:27017 --mount type=bind,src="./api/test/mongodb/",dst=/docker-entrypoint-initdb.d/ mongo:latest
+  
+  mongo-start:
+    desc: Start the MongoDB container
+    cmds:
+      - docker start {{.MONGO_CONTAINER_NAME}}
+
+  mongo-stop:
+    desc: Stop the MongoDB container
+    cmds:
+      - docker stop {{.MONGO_CONTAINER_NAME}}
+
+  mongo-delete:
+    desc: Remove the MongoDB container
+    cmds:
+      - docker rm -f {{.MONGO_CONTAINER_NAME}}
+
+  unit-deploy:
+    desc: Launch NGINX unit against local dev code
+    vars:
+      MONGO_IP: 
+        sh: docker inspect -f '{{`{{ .NetworkSettings.IPAddress }}`}}'  {{.MONGO_CONTAINER_NAME}}
+    env:
+      MONGO_URI: "mongodb://{{.MONGO_IP}}:27017"
+    cmds:
+      - echo $MONGO_URI
+      - echo "" > ./api/log/unit.log
+      - rm -rf ./api/state/*
+      - docker run -d --mount type=bind,src="./api/config/",dst=/docker-entrypoint.d/ --mount type=bind,src="./api/log/unit.log",dst=/var/log/unit.log --mount type=bind,src="./api/state",dst=/var/lib/unit --mount type=bind,src="./api/family",dst=/www/family --mount type=bind,src="./api/ledger",dst=/www/ledger --mount type=bind,src="./api/users",dst=/www/users --mount type=bind,src="./api/test",dst=/www/test --env MONGO_URI -p 8080:8000 --name {{.UNIT_CONTAINER_NAME}} unit-allowance:latest
+
+  unit-delete:
+    desc: Delete the NGINX Unit container
+    cmds:
+      - docker rm -f {{.UNIT_CONTAINER_NAME}}
+
+  unit-get-config:
+    desc: Get the NGINX Unit configuration
+    cmds:
+      - docker exec {{.UNIT_CONTAINER_NAME}} curl -X GET --unix-socket /var/run/control.unit.sock http://localhost/config
+
+  unit-reload-config:
+    desc: Reload the NGINX Unit configuration
+    cmds:
+      - docker exec {{.UNIT_CONTAINER_NAME}} curl -X PUT --data-binary @/docker-entrypoint.d/config.json --unix-socket /var/run/control.unit.sock http://localhost/config
