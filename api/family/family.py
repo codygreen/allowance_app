@@ -8,7 +8,7 @@ import os
 class Family(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     name: str
-    guardians: list[int]
+    guardians: list[str]
 
 app = FastAPI()
 client = MongoClient(os.environ['MONGO_URI'])
