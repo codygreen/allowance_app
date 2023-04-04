@@ -82,7 +82,7 @@ async def show_list():
 async def show_family(id: str):
     collection = db.family
     family = collection.find_one({"_id": ObjectId(id)})
-    return JSONResponse(status_code=status.HTTP_200_OK, content=ObjectIdParser(family))
+    return family
 
 @app.post("/", status_code=status.HTTP_201_CREATED, response_model=Family)
 async def create_family(family: UpdateFamily):
@@ -101,8 +101,10 @@ async def update_family(id: str, family: UpdateFamily):
         if update_result.modified_count == 1:
             if update_result.matched_count == 1:
                 updated_family = collection.find_one({"_id": ObjectId(id)})
-                return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=ObjectIdParser(updated_family))
-    return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED, content={"message": "Family not modified"})
+                return update_family
+    if update_result.matched_count == 0:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+    return Response(status_code=status.HTTP_304_NOT_MODIFIED, content={"message": "Family not modified"})
 
 @app.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_family(id: str):
@@ -110,4 +112,4 @@ async def delete_family(id: str):
     delete_result = collection.delete_one({"_id": ObjectId(id)})
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "Family not found"})
+    return Response(status_code=status.HTTP_404_NOT_FOUND)
