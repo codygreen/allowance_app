@@ -1,11 +1,13 @@
 from beanie import Document
 from pydantic import BaseModel, Field
 from beanie import PydanticObjectId
+from typing import Literal 
+
 
 class User(Document):
     name: str
     password: str
-    type: str
+    type: Literal["guardian", "child", "contributor"]
     familyId: PydanticObjectId
 
     class Config:
