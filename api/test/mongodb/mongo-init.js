@@ -1,8 +1,8 @@
 db = db.getSiblingDB('allowance');
 
-db.createCollection('family');
+db.createCollection('Family');
 
-db.family.insertMany([
+db.Family.insertMany([
  { 
     "_id": new ObjectId("642b09500fec1b9fe4ab78ae"),
     "name": "Green",
@@ -13,9 +13,9 @@ db.family.insertMany([
   }
 ]);
 
-db.createCollection('users');
+db.createCollection('User');
 
-db.users.insertMany([
+db.User.insertMany([
     {
         "_id": new ObjectId("642b03b9f0d9fe0007309f0e"),
         "name": "John",
@@ -46,9 +46,9 @@ db.users.insertMany([
     }
 ]);
 
-db.createCollection('ledger');
+db.createCollection('Ledger');
 
-db.ledger.insertMany([
+db.Ledger.insertMany([
     {
         "userId": "642b03b9f0d9fe0007309f0f",
         "amount": 100,
