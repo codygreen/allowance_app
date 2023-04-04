@@ -7,7 +7,8 @@ db.family.insertMany([
     "_id": new ObjectId("642b09500fec1b9fe4ab78ae"),
     "name": "Green",
     "guardians": [
-        "642b03b9f0d9fe0007309f0e"
+        "642b03b9f0d9fe0007309f0e",
+        "642b050c62d9566c1c02abe5"
     ]
   }
 ]);
