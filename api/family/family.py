@@ -101,10 +101,10 @@ async def update_family(id: str, family: UpdateFamily):
         if update_result.modified_count == 1:
             if update_result.matched_count == 1:
                 updated_family = collection.find_one({"_id": ObjectId(id)})
-                return update_family
+                return updated_family
     if update_result.matched_count == 0:
         return Response(status_code=status.HTTP_404_NOT_FOUND)
-    return Response(status_code=status.HTTP_304_NOT_MODIFIED, content={"message": "Family not modified"})
+    return Response(status_code=status.HTTP_304_NOT_MODIFIED)
 
 @app.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_family(id: str):
