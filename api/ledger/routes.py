@@ -3,9 +3,12 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from beanie import PydanticObjectId
 
+from redis import Redis
+
 from models import Ledger
 
 ledger_router = APIRouter()
+redis = Redis(host='localhost', port=6379, db=0)
 
 async def get_ledger(ledger_id: PydanticObjectId) -> Ledger:
     ledger = await Ledger.get(ledger_id)
@@ -24,7 +27,17 @@ async def get_ledger_by_id(ledger: Ledger = Depends(get_ledger)):
 @ledger_router.post("/", status_code=status.HTTP_201_CREATED,
                     response_model=Ledger)
 async def create_ledger(ledger: Ledger):
-    return await ledger.insert()
+    await ledger.insert()
+    # we need to recalculate the balance
+    event = {
+        "type": "update_balance", 
+        "ledger_id": str(ledger.id), 
+        "user_id": str(ledger.userId),
+        "amount": ledger.amount, 
+        "state": ledger.state
+    }
+    redis.xadd("user", event)
+    return ledger
 
 @ledger_router.put("/{ledger_id}", response_model=Ledger)
 async def update_ledger(update_ledger: Ledger, ledger: Ledger = Depends(get_ledger)):
