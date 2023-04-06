@@ -4,7 +4,7 @@ from redis import Redis
 
 sys.path.append('..')
 
-from redis_util import Consumer, RedisMsg
+from utils import Consumer, RedisMsg
 
 redis_hostname = environ.get('REDIS_HOSTNAME', 'localhost')
 redis_port = environ.get('REDIS_PORT', 6379)
@@ -38,17 +38,25 @@ class TestRedisUtil(unittest.TestCase):
     def setUp(self) -> None:
         # add an event to the stream
         self.event_id = self.redis.xadd(stream_name, test_event)
+        self.consumer = Consumer(self.redis, stream_name, group_name, worker_name)
+        self.events = self.consumer.get_events()
 
     def tearDown(self) -> None:
         # ack and delete the event from the stream
         self.redis.xack(stream_name, group_name, self.event_id)
         self.redis.xdel(stream_name, self.event_id)
+    
+    def test_ack_event(self):
+        print('Testing Redis Consumer ack_event')
+        # ensure our pending count is 1
+        self.assertEqual(self.redis.xpending(stream_name, group_name)['pending'], 1)
+        self.consumer.ack_event(self.event_id)
+        # ensure our pending count is 0
+        self.assertEqual(self.redis.xpending(stream_name, group_name)['pending'], 0)
 
     def test_consumer(self):
         print('Testing Redis Consumer')
-        consumer = Consumer(self.redis, stream_name, group_name, worker_name)
-        # assert that the consumer has a redis connection
-        self.assertTrue(consumer.redis)
+        self.assertTrue(self.consumer.redis)
 
         # assert that the consumer created a consumer group
         self.assertTrue(
@@ -59,8 +67,6 @@ class TestRedisUtil(unittest.TestCase):
 
     def test_get_events(self):
         print('Testing Redis Consumer get_events')
-        consumer = Consumer(self.redis, stream_name, group_name, worker_name)
-        events = consumer.get_events()
         # assert that consumer.get_events() created a consumer group worker
         self.assertTrue(
             any(
@@ -68,19 +74,8 @@ class TestRedisUtil(unittest.TestCase):
             )
         )
         # assert that consumer.get_events() returned a list of events
-        self.assertTrue(events)
-        self.assertGreater(len(events), 0)
-
-
-    def test_ack_event(self):
-        print('Testing Redis Consumer ack_event')
-        consumer = Consumer(self.redis, stream_name, group_name, worker_name)
-        events = consumer.get_events()
-        # ensure our pending count is 1
-        self.assertEqual(self.redis.xpending(stream_name, group_name)['pending'], 1)
-        ack = consumer.ack_event(self.event_id)
-        # ensure our pending count is 0
-        self.assertEqual(self.redis.xpending(stream_name, group_name)['pending'], 0)
+        self.assertTrue(self.events)
+        self.assertGreater(len(self.events), 0)
     
     def test_redis_msg(self):
         print('Testing Redis Consumer redis_msg')
