@@ -36,7 +36,7 @@ async def create_ledger(ledger: Ledger):
         "amount": ledger.amount, 
         "state": ledger.state
     }
-    redis.xadd("user", event)
+    redis.xadd("user", event, id='*')
     return ledger
 
 @ledger_router.put("/{ledger_id}", response_model=Ledger)
