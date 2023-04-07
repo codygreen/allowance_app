@@ -1,12 +1,12 @@
-from beanie import Document
-from pydantic import BaseModel, Field
-from beanie import PydanticObjectId
-
+"""Family Data Models"""
+from beanie import Document, PydanticObjectId
 class Family(Document):
+    """Family Document"""
     name: str
     guardians: list[PydanticObjectId]
 
     class Config:
+        """Family Schema Example"""
         schema_extra = {
             "example": {
                 "name": "Green",
