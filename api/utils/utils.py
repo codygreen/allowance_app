@@ -22,9 +22,9 @@ class MsgId(Enum):
 
 class Consumer:
     def __init__(
-            self, 
-            redis: Redis, 
-            stream_name: str, 
+            self,
+            redis: Redis,
+            stream_name: str,
             group_name: str,
             worker_name: Union[str, int] = f"{os.getpid()}{threading.get_ident()}",
             batch_size: int = 1,
@@ -41,7 +41,7 @@ class Consumer:
         self.poll_time_ms = poll_time_ms
         self.cleanup_on_exit = cleanup_on_exit
         self._create_group()
-        
+
     def _create_group(self):
         groups = self.redis.xinfo_groups(self.stream_name)
         for group in groups:
@@ -55,7 +55,7 @@ class Consumer:
     def get_events(self) -> List[RedisMsg]:
         events = []
         # event = self.redis.xpending(
-        #     self.   
+        #     self.
         # )
         event = self.redis.xreadgroup(
             self.group_name,
@@ -65,4 +65,4 @@ class Consumer:
             block=self.max_wait_time_ms
         )
         events.extend(event)
-        return events        
+        return events

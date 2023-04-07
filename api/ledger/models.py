@@ -1,7 +1,7 @@
 from beanie import Document
 from pydantic import BaseModel, Field
 from beanie import PydanticObjectId
-from typing import Literal 
+from typing import Literal
 from datetime import datetime
 
 class Ledger(Document):

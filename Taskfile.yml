@@ -6,7 +6,7 @@ vars:
   MONGO_URI: "mongodb://127.0.0.1:27017"
 
 tasks:
-  
+
   local-dev-family:
     desc: Launch local server for development
     dir: ./api/family
@@ -14,8 +14,8 @@ tasks:
       MONGO_URI: "{{.MONGO_URI}}"
     cmds:
       - echo $MONGO_URI
-      - uvicorn family:app --reload
-  
+      - uvicorn main:app --reload --port 8000
+
   local-dev-ledger:
     desc: Launch local server for development
     dir: ./api/ledger
@@ -23,40 +23,28 @@ tasks:
       MONGO_URI: "{{.MONGO_URI}}"
     cmds:
       - echo $MONGO_URI
-      - uvicorn ledger:app --reload
+      - uvicorn main:app --reload --port 8003
 
-  local-dev-users:
+  local-dev-user:
     desc: Launch local server for development
-    dir: ./api/users
+    dir: ./api/user
     env:
       MONGO_URI: "{{.MONGO_URI}}"
     cmds:
-      - uvicorn users:app --reload
-  
-  mongo-deploy:
-    desc: Deploy the MongoDB container
-    cmds:
-      - docker run -d --name {{.MONGO_CONTAINER_NAME}} -p 27017:27017 --mount type=bind,src="./api/test/mongodb/",dst=/docker-entrypoint-initdb.d/ mongo:latest
-  
-  mongo-start:
-    desc: Start the MongoDB container
-    cmds:
-      - docker start {{.MONGO_CONTAINER_NAME}}
+      - uvicorn main:app --reload --port 8002
 
-  mongo-stop:
-    desc: Stop the MongoDB container
+  local-dev-test:
+    desc: Launch local server for development
+    dir: ./api/test
+    env:
+      MONGO_URI: "{{.MONGO_URI}}"
     cmds:
-      - docker stop {{.MONGO_CONTAINER_NAME}}
-
-  mongo-delete:
-    desc: Remove the MongoDB container
-    cmds:
-      - docker rm -f {{.MONGO_CONTAINER_NAME}}
+      - uvicorn test:app --reload
 
   unit-deploy:
     desc: Launch NGINX unit against local dev code
     vars:
-      MONGO_IP: 
+      MONGO_IP:
         sh: docker inspect -f '{{`{{ .NetworkSettings.IPAddress }}`}}'  {{.MONGO_CONTAINER_NAME}}
     env:
       MONGO_URI: "mongodb://{{.MONGO_IP}}:27017"
@@ -80,3 +68,9 @@ tasks:
     desc: Reload the NGINX Unit configuration
     cmds:
       - docker exec {{.UNIT_CONTAINER_NAME}} curl -X PUT --data-binary @/docker-entrypoint.d/config.json --unix-socket /var/run/control.unit.sock http://localhost/config
+
+  pre-commit:
+    desc: Run Pre-Commit checks against all files
+    dir: ./api
+    cmds:
+      - pre-commit run --all-files

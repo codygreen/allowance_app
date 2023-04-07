@@ -30,10 +30,10 @@ async def create_ledger(ledger: Ledger):
     await ledger.insert()
     # we need to recalculate the balance
     event = {
-        "type": "update_balance", 
-        "ledger_id": str(ledger.id), 
+        "type": "update_balance",
+        "ledger_id": str(ledger.id),
         "user_id": str(ledger.userId),
-        "amount": ledger.amount, 
+        "amount": ledger.amount,
         "state": ledger.state
     }
     redis.xadd("user", event, id='*')
@@ -62,5 +62,3 @@ async def get_ledgers_by_user_id(user_id: str, state: str = None, limit: int = 1
     if state:
         return await Ledger.find(Ledger.userId == user_id, Ledger.state == state).limit(limit).to_list()
     return await Ledger.find(Ledger.userId == user_id).limit(limit).to_list()
-
-

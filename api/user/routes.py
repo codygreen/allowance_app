@@ -24,7 +24,7 @@ async def get_users():
 async def get_user_by_id(user: User = Depends(get_user)):
     return user
 
-@users_router.post("/", status_code=status.HTTP_201_CREATED, 
+@users_router.post("/", status_code=status.HTTP_201_CREATED,
                    response_model=User)
 async def create_user(user: User):
     return await user.insert()

@@ -3,7 +3,7 @@ db = db.getSiblingDB('allowance');
 db.createCollection('Family');
 
 db.Family.insertMany([
- { 
+ {
     "_id": new ObjectId("642b09500fec1b9fe4ab78ae"),
     "name": "Green",
     "guardians": [

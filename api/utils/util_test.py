@@ -45,7 +45,7 @@ class TestRedisUtil(unittest.TestCase):
         # ack and delete the event from the stream
         self.redis.xack(stream_name, group_name, self.event_id)
         self.redis.xdel(stream_name, self.event_id)
-    
+
     def test_ack_event(self):
         print('Testing Redis Consumer ack_event')
         # ensure our pending count is 1
@@ -76,7 +76,7 @@ class TestRedisUtil(unittest.TestCase):
         # assert that consumer.get_events() returned a list of events
         self.assertTrue(self.events)
         self.assertGreater(len(self.events), 0)
-    
+
     def test_redis_msg(self):
         print('Testing Redis Consumer redis_msg')
         msg = RedisMsg(self.event_id, test_event)

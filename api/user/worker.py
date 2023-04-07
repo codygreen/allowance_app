@@ -14,7 +14,7 @@ redis_hostname = environ.get('REDIS_HOSTNAME', 'localhost')
 redis_port = environ.get('REDIS_PORT', 6379)
 stream_name = environ.get('REDIS_STREAM_NAME', 'user')
 group_name = environ.get('REDIS_GROUP_NAME', 'user_group')
-worker_name = environ.get('REDIS_WORKER_NAME', 
+worker_name = environ.get('REDIS_WORKER_NAME',
                           ''.join(random.choices(string.ascii_lowercase +
                              string.digits, k=7)))
 
@@ -38,7 +38,7 @@ async def init():
             print("EVENT: {}".format(event))
             await process_event(event)
             consumer.ack_event(i)
-            
+
 async def process_event(event):
     print("PROCESSING EVENT: {}".format(event))
     key, message = event

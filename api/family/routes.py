@@ -24,7 +24,7 @@ async def get_families():
 async def get_family_by_id(family: Family = Depends(get_family)):
     return family
 
-@family_router.post("/", status_code=status.HTTP_201_CREATED, 
+@family_router.post("/", status_code=status.HTTP_201_CREATED,
                     response_model=Family)
 async def create_family(family: Family):
     return await family.insert()

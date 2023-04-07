@@ -129,3 +129,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 api/settings.py
+api/state/*
+
+# OS X
+.DS_Store
+
+# MongoDB
+mongodb-data/*
+
+# Redis
+redis-data/*
