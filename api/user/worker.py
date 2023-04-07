@@ -4,13 +4,16 @@ import random
 import string
 import sys
 from os import environ
-from utils import Consumer
+# from utils import Consumer
 import motor
 from beanie import PydanticObjectId, init_beanie
 from models import User
 from redis import Redis
 from routes import get_user
+
+# pylint: disable=wrong-import-position
 sys.path.append('../utils')
+from utils import Consumer
 
 redis_hostname = environ.get('REDIS_HOSTNAME', 'localhost')
 redis_port = environ.get('REDIS_PORT', 6379)
