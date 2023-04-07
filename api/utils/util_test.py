@@ -1,10 +1,11 @@
-import sys, unittest
+"""Unit tests for the utils module."""
+import sys
+import unittest
 from os import environ
+from utils import Consumer, RedisMsg
 from redis import Redis
 
 sys.path.append('..')
-
-from utils import Consumer, RedisMsg
 
 redis_hostname = environ.get('REDIS_HOSTNAME', 'localhost')
 redis_port = environ.get('REDIS_PORT', 6379)
@@ -22,31 +23,37 @@ test_event = {
 }
 
 class TestRedisUtil(unittest.TestCase):
+    """Unit tests for the Redis consumer class."""
     @classmethod
-    def setUpClass(self) -> None:
+    def setUpClass(cls) -> None:
+        """Set up the test class."""
         # connect to redis
-        self.redis = Redis(redis_hostname, redis_port, db=0, decode_responses=True)
+        cls.redis = Redis(redis_hostname, redis_port, db=0, decode_responses=True)
 
     @classmethod
-    def tearDownClass(self) -> None:
+    def tearDownClass(cls) -> None:
+        """Tear down the test class."""
         # delete the consumer group
-        self.redis.xgroup_delconsumer(stream_name, group_name, worker_name)
-        self.redis.xgroup_destroy(stream_name, group_name)
+        cls.redis.xgroup_delconsumer(stream_name, group_name, worker_name)
+        cls.redis.xgroup_destroy(stream_name, group_name)
         # close redis connection
-        self.redis.close()
+        cls.redis.close()
 
     def setUp(self) -> None:
+        """Set up the test case before each run"""
         # add an event to the stream
         self.event_id = self.redis.xadd(stream_name, test_event)
         self.consumer = Consumer(self.redis, stream_name, group_name, worker_name)
         self.events = self.consumer.get_events()
 
     def tearDown(self) -> None:
+        """Tear down the test case after each run"""
         # ack and delete the event from the stream
         self.redis.xack(stream_name, group_name, self.event_id)
         self.redis.xdel(stream_name, self.event_id)
 
     def test_ack_event(self):
+        """Test the ack_event method."""
         print('Testing Redis Consumer ack_event')
         # ensure our pending count is 1
         self.assertEqual(self.redis.xpending(stream_name, group_name)['pending'], 1)
@@ -55,6 +62,7 @@ class TestRedisUtil(unittest.TestCase):
         self.assertEqual(self.redis.xpending(stream_name, group_name)['pending'], 0)
 
     def test_consumer(self):
+        """Test the Consumer class."""
         print('Testing Redis Consumer')
         self.assertTrue(self.consumer.redis)
 
@@ -66,11 +74,13 @@ class TestRedisUtil(unittest.TestCase):
         )
 
     def test_get_events(self):
+        """Test the get_events method."""
         print('Testing Redis Consumer get_events')
         # assert that consumer.get_events() created a consumer group worker
         self.assertTrue(
             any(
-            worker_name in worker.values() for worker in self.redis.xinfo_consumers(stream_name, group_name)
+                worker_name in worker.values()
+                    for worker in self.redis.xinfo_consumers(stream_name, group_name)
             )
         )
         # assert that consumer.get_events() returned a list of events
@@ -78,6 +88,7 @@ class TestRedisUtil(unittest.TestCase):
         self.assertGreater(len(self.events), 0)
 
     def test_redis_msg(self):
+        """Test the RedisMsg class."""
         print('Testing Redis Consumer redis_msg')
         msg = RedisMsg(self.event_id, test_event)
         self.assertEqual(msg.id, self.event_id)
