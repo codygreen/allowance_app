@@ -1,3 +1,4 @@
+"""Ledger API"""
 import motor
 from beanie import init_beanie
 from fastapi import FastAPI
@@ -10,11 +11,13 @@ app = FastAPI()
 
 
 class Settings(BaseSettings):
+    """Settings for motor"""
     mongodb_url = "mongodb://localhost:27017/allowance"
 
 
 @app.on_event("startup")
 async def app_init():
+    """Initialize the app"""
     client = motor.motor_asyncio.AsyncIOMotorClient(Settings().mongodb_url)
     await init_beanie(client.get_default_database(), document_models=[Ledger])
     app.include_router(ledger_router, prefix="/v1/ledger")
